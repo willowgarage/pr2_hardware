@@ -14,7 +14,7 @@ public:
   PR2Hardware(pr2_mechanism_model::Robot* model) :
     pr2_mechanism_model::RobotState(model)
   {
-
+    registerType(typeid(pr2_mechanism_model::RobotState).name());
   }
 };
 

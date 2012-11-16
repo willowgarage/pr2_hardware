@@ -8,9 +8,13 @@
   <url>https://github.com/willowgarage/ros_control_pr2/wiki</url>
 
   <depend package="pr2_mechanism_model"/>
+  <depend package="controller_manager"/>
+  <depend package="pr2_mechanism_msgs"/>
+  <depend package="controller_manager_msgs"/>
+
 
   <export>
-    <cpp cflags="-I${prefix}/include" />
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -lpr2_hardware" />
   </export>
 
 </package>
