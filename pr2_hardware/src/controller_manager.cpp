@@ -36,6 +36,7 @@ namespace pr2_hardware
 ControllerManager::ControllerManager(pr2_hardware_interface::HardwareInterface *hw, const ros::NodeHandle& nh) :
   model_(hw),
   state_(NULL),
+  pr2_hardware_(NULL),
   nh_(nh)
 {
 
@@ -43,8 +44,8 @@ ControllerManager::ControllerManager(pr2_hardware_interface::HardwareInterface *
 
 ControllerManager::~ControllerManager()
 {
-  if (state_)
-    delete state_;
+  if (pr2_hardware_)
+    delete pr2_hardware_;
 }
 
 
@@ -55,10 +56,11 @@ bool ControllerManager::initXml(TiXmlElement* config)
     ROS_ERROR("Failed to initialize pr2 mechanism model");
     return false;
   }
-  state_ = new PR2Hardware(&model_);
+  pr2_hardware_ = new PR2Hardware(&model_);
+  state_ = &pr2_hardware_->robot_state_;
   motors_previously_halted_ = state_->isHalted();
 
-  cm_.reset(new controller_manager::ControllerManager(state_, nh_));
+  cm_.reset(new controller_manager::ControllerManager(pr2_hardware_, nh_));
 
   typedef boost::shared_ptr<controller_manager::ControllerLoaderInterface> LoaderPtr;
   cm_->registerControllerLoader(LoaderPtr( new controller_manager::ControllerLoader<pr2_controller_interface::Controller>("pr2_controller_interface",

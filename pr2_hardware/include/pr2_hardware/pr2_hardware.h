@@ -5,60 +5,36 @@
 #include <hardware_interface/hardware_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 
+
 namespace pr2_hardware
 {
 
-class PR2Hardware : public pr2_mechanism_model::RobotState,
-                    virtual public hardware_interface::HardwareInterface,
-                    public hardware_interface::EffortJointInterface
+class PR2Hardware : public hardware_interface::RobotHW
 {
 public:
   PR2Hardware(pr2_mechanism_model::Robot* model) :
-    pr2_mechanism_model::RobotState(model)
+    robot_state_(model)
   {
-    registerType(typeid(pr2_mechanism_model::RobotState).name());
+    typedef std::map<std::string, pr2_mechanism_model::JointState*> JointStateMap;
+    for(JointStateMap::iterator it = robot_state_.joint_states_map_.begin();
+        it != robot_state_.joint_states_map_.end(); ++it)
+    {
+      joint_state_interface_.registerJoint( it->first,
+                                           &it->second->position_,
+                                           &it->second->velocity_,
+                                           &it->second->measured_effort_);
+      effort_joint_interface_.registerJoint(joint_state_interface_.getJointStateHandle(it->first),
+                                            &it->second->commanded_effort_);
+    }
+
+    registerInterface(&joint_state_interface_);
+    registerInterface(&effort_joint_interface_);
+    registerInterface(&robot_state_);
   }
 
-  std::vector<std::string> getJointNames() const
-  {
-    std::vector<std::string> out;
-    std::map<std::string, pr2_mechanism_model::JointState*>::const_iterator it;
-    for(it = joint_states_map_.begin(); it != joint_states_map_.end(); it++)
-      out.push_back((*it).first);
-    return out;
-  }
-
-  double* getEffortCommand(const std::string& name)
-  {
-    pr2_mechanism_model::JointState* js = pr2_mechanism_model::RobotState::getJointState(name);
-    if (js)
-      return &js->commanded_effort_;
-    return NULL;
-  }
-
-  const double* getPosition(const std::string &name) const
-  {
-    const pr2_mechanism_model::JointState* js = pr2_mechanism_model::RobotState::getJointState(name);
-    if (js)
-      return &js->position_;
-    return NULL;
-  }
-
-  const double* getVelocity(const std::string &name) const
-  {
-    const pr2_mechanism_model::JointState* js = pr2_mechanism_model::RobotState::getJointState(name);
-    if (js)
-      return &js->velocity_;
-    return NULL;
-  }
-
-  const double* getEffort(const std::string &name) const
-  {
-    const pr2_mechanism_model::JointState* js = pr2_mechanism_model::RobotState::getJointState(name);
-    if (js)
-      return &js->measured_effort_;
-    return NULL;
-  }
+  pr2_mechanism_model::RobotState robot_state_;
+  hardware_interface::JointStateInterface  joint_state_interface_;
+  hardware_interface::EffortJointInterface effort_joint_interface_;
 };
 
 }
