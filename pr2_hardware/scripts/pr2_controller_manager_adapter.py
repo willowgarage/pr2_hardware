@@ -47,14 +47,23 @@ class ServiceMapper:
       exec("import %s.srv" % self.from_pkg)
 
       to_req = eval("%s.srv.%sRequest()" % (self.to_pkg, self.to_type))
-      for f,t in self.req_map.iteritems():
+      for t,f in self.req_map.iteritems():
           exec( 'to_req.%s = from_req.%s' % (t,f) )
 
       to_resp = self.client.call(to_req)
 
       from_resp = eval("%s.srv.%sResponse()" % (self.from_pkg, self.from_type))
       for f,t in self.resp_map.iteritems():
-          exec( 'from_resp.%s = to_resp.%s' % (t,f) )
+          # dealing with a list
+          if '[]' in t:
+              exec('t_list = to_resp.%s'%(t.split('[]')[0]))
+              t_item = t.split('[]')[1]
+              for l in t_list:
+                  exec( 'from_resp.%s = l.%s' %(f, t_item))
+
+          # dealing with a regular object that we can just copy
+          else:
+              exec( 'from_resp.%s = to_resp.%s' % (f,t) )
       return from_resp
 
 
@@ -69,8 +78,8 @@ if __name__ == "__main__":
     list_controllers = ServiceMapper( 'pr2_mechanism_msgs', 'ListControllers',  'controller_manager_msgs', 'ListControllers',
                                       'pr2_controller_manager/list_controllers', 'controller_manager/list_controllers',
                                       { },
-                                      { 'name':   'controllers',
-                                        'state':  'state'} )
+                                      { 'name':   'controller[]/name',
+                                        'state':  'controller[]/state'} )
 
     list_controller_types = ServiceMapper( 'pr2_mechanism_msgs', 'ListControllerTypes',  'controller_manager_msgs', 'ListControllerTypes',
                                            'pr2_controller_manager/list_controller_types', 'controller_manager/list_controller_types',
