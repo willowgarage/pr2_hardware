@@ -38,8 +38,8 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  pr2_hardware_interface::HardwareInterface hw;
-  pr2_mechanism_model::Robot* cm2_model = new pr2_mechanism_model::Robot(&hw);
+  pr2_hardware_interface::HardwareInterface hw_interface;
+  pr2_hardware::PR2Hardware hw(&hw_interface);
 
   std::string urdf_string;
   bool success;
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   }
 
   printf("About to call initXml\n");
-  success = cm2_model->initXml(doc.RootElement());
+  success = hw.initXml(doc.RootElement());
   if (!success)
   {
     printf("Error calling initXml\n");
@@ -72,26 +72,19 @@ int main(int argc, char** argv)
   }
   printf("Done calling initXml\n");
 
-  pr2_hardware::PR2Hardware* cm2_state = new pr2_hardware::PR2Hardware(cm2_model);
-
-  controller_manager::ControllerManager* cm = new controller_manager::ControllerManager(cm2_state, nh);
+  controller_manager::ControllerManager cm(&hw, nh);
 
   while (ros::ok())
   {
     ROS_INFO("loop");
-    //hw.read();
-    cm->update(ros::Time::now());
-    //hw.write();
+    hw.read();
+    cm.update(ros::Time::now());
+    hw.write();
 
     ROS_INFO("about to sleep\n");
     break;
     ros::Duration(1.0).sleep();
   }
-
-  delete cm;
-  delete cm2_state;
-  delete cm2_model;
-
 
   return 0;
 }

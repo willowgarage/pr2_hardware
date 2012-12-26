@@ -34,34 +34,30 @@ namespace pr2_hardware
 {
 
 ControllerManager::ControllerManager(pr2_hardware_interface::HardwareInterface *hw, const ros::NodeHandle& nh) :
-  model_(hw),
-  state_(NULL),
-  pr2_hardware_(NULL),
+  pr2_hardware_(hw),
   nh_(nh)
 {
 
 }
 
 ControllerManager::~ControllerManager()
-{
-  if (pr2_hardware_)
-    delete pr2_hardware_;
-}
+{}
 
 
 bool ControllerManager::initXml(TiXmlElement* config)
 {
-  if (!model_.initXml(config))
+  if (!pr2_hardware_.initXml(config))
   {
-    ROS_ERROR("Failed to initialize pr2 mechanism model");
+    ROS_ERROR("Failed to initialize PR2Hardware");
     return false;
   }
-  pr2_hardware_ = new PR2Hardware(&model_);
-  state_ = &pr2_hardware_->robot_state_;
-  motors_previously_halted_ = state_->isHalted();
+  model_ = &pr2_hardware_.robot_model_;
+  state_ = pr2_hardware_.robot_state_;
 
-  cm_.reset(new controller_manager::ControllerManager(pr2_hardware_, nh_));
+  // create the ros_control style controller manager
+  cm_.reset(new controller_manager::ControllerManager(&pr2_hardware_, nh_));
 
+  // allow old controllers to be loaded into the controller manager
   typedef boost::shared_ptr<controller_manager::ControllerLoaderInterface> LoaderPtr;
   cm_->registerControllerLoader(LoaderPtr( new controller_manager::ControllerLoader<pr2_controller_interface::Controller>("pr2_controller_interface",
                                                                                                                           "pr2_controller_interface::Controller") ) );
@@ -73,18 +69,14 @@ bool ControllerManager::initXml(TiXmlElement* config)
 // Must be realtime safe.
 void ControllerManager::update()
 {
-  state_->propagateActuatorPositionToJointPosition();
-  state_->zeroCommands();
-
-  // Restart all running controllers if motors are re-enabled
-  bool reset_controllers = !state_->isHalted() && motors_previously_halted_;
-  motors_previously_halted_ = state_->isHalted();
+  // read sensors
+  pr2_hardware_.read();
 
   // Update all controllers
-  cm_->update(state_->getTime(), reset_controllers);
+  cm_->update(state_->getTime(), pr2_hardware_.reset_controllers);
 
-  state_->enforceSafety();
-  state_->propagateJointEffortToActuatorEffort();
+  // write controllers
+  pr2_hardware_.write();
 }
 
 }

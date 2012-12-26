@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
+set(ROSPACK_MAKEDIST true)
+
 # Set the build type.  Options are:
 #  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
 #  Debug          : w/ debug symbols, w/o optimization
@@ -27,5 +29,8 @@ rosbuild_add_library(${PROJECT_NAME} src/controller_manager.cpp include/pr2_hard
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+rosbuild_add_executable(pr2_cm_dummy test/pr2_cm_dummy.cpp)
+target_link_libraries(pr2_cm_dummy ${PROJECT_NAME})
+
+
+rosbuild_make_distribution(0.0.1)

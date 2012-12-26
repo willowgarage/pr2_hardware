@@ -52,12 +52,11 @@ public:
   // Non real-time functions
   bool initXml(TiXmlElement* config);
 
-  pr2_mechanism_model::Robot model_;
   pr2_mechanism_model::RobotState* state_;
+  pr2_mechanism_model::Robot* model_;
 
 private:
-  PR2Hardware *pr2_hardware_;
-  bool motors_previously_halted_;
+  PR2Hardware pr2_hardware_;
   boost::scoped_ptr<controller_manager::ControllerManager> cm_;
   ros::NodeHandle nh_;
 };
