@@ -1,0 +1,14 @@
+<stack>
+  <description brief="ROS Control">
+    Integration tools for the PR2 and the controller manager 
+  </description>
+  <author>Maintained by Wim Meeussen</author>
+  <license>BSD</license>
+  <review status="Doc reviewed" notes="2009-11-13"/>
+  <url>http://ros.org/wiki/ros_control_pr2</url>
+
+  <depend stack="ros_control" /> 
+  <depend stack="pr2_mechanism" />
+
+
+</stack>
