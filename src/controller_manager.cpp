@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2008, Willow Garage, Inc.
+// Copyright (C) 2012, hiDOF, Inc.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
