@@ -33,4 +33,4 @@ rosbuild_add_executable(pr2_cm_dummy test/pr2_cm_dummy.cpp)
 target_link_libraries(pr2_cm_dummy ${PROJECT_NAME})
 
 
-rosbuild_make_distribution(0.0.1)
+rosbuild_make_distribution(0.0.2)
