@@ -72,8 +72,8 @@ void ControllerManager::update()
   // read sensors
   pr2_hardware_.read();
 
-  // Update all controllers
-  cm_->update(state_->getTime(), pr2_hardware_.reset_controllers);
+  // Update all controllers at 1khz
+  cm_->update(state_->getTime(), ros::Duration(0.001), pr2_hardware_.reset_controllers);
 
   // write controllers
   pr2_hardware_.write();

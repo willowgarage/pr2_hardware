@@ -73,17 +73,17 @@ int main(int argc, char** argv)
   printf("Done calling initXml\n");
 
   controller_manager::ControllerManager cm(&hw, nh);
-
+  ros::Duration period(1.0);
   while (ros::ok())
   {
     ROS_INFO("loop");
     hw.read();
-    cm.update(ros::Time::now());
+    cm.update(ros::Time::now(), period);
     hw.write();
 
     ROS_INFO("about to sleep\n");
     break;
-    ros::Duration(1.0).sleep();
+    period.sleep();
   }
 
   return 0;
